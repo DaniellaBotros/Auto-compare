@@ -1,8 +1,5 @@
 import java.io.*; 
-import java.util.Scanner;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;  
 import java.lang.*;
 
 
@@ -33,51 +30,79 @@ class listObj {
 
     }
 
-    public int getValue(){
+    public int getIntegerValue(){
         return this.value;
     }
+     @Override
+    public int hashCode() 
+    { 
+        return this.value; 
+    } 
+
 }
 
 
 public class AutoCompare 
 {
-
-
-    public static ArrayList<Integer> getIntList(String text, String listname){
-
-    ArrayList<Integer> list=new ArrayList<Integer>() ;
-    String temp="";
-    char[] charList=text.toCharArray();
-    for(int i=0; i<charList.length;i++){
-        if(charList[i]!='\n' && charList[i]!=','&& charList[i]!='\t' && charList[i]!=' '){
-            temp=temp+charList[i];
-           
+    public static String[] getstrNumbers(String text){
+        //Assuming list may begin and end with ',' we remove ','
+         String str=text;
+        if(text.charAt(0)==','){
+            str=str.substring(1, text.length());// end = inputed end index-1
         }
-         else if(charList[i]==',' && i!=0 && list.contains(Integer.parseInt(temp)) && temp!=""){
-            temp="";
-         }
-        else if(charList[i]==',' && i!=0 && !list.contains(Integer.parseInt(temp)) && temp!="" ){
-            list.add(Integer.parseInt(temp));
-            temp="";
+        if(text.charAt(text.length()-1)==','){
+            str=str.substring(0, text.length()-1);// end = inputed end index-1
         }
-    }
-    return list;
+        return str.split(",");
+
+        
 
     }
+    public static ArrayList<listObj> getListOfObjects(String[] text, String name){
+        ArrayList<listObj> list= new ArrayList<listObj>();
+       for (int i=0; i< text.length; i++){
+        list.add(new listObj(name, Integer.parseInt(text[i])));
+
+       }
+
+        return list;
+    }
 
 
+    public static void getEntries (HashMap <listObj,Integer> entries, ArrayList<listObj>list ){
+            for (listObj lo : list) {
+                if(entries.isEmpty() ||(entries.getOrDefault(lo,-1)==-1) ){
+                    entries.putIfAbsent(lo,0);
+                }
+                else{
+                    entries.replace(lo,(entries.get(lo)+1));
+                }
+                
+            }
+      
+    }
+
+    public static void writeToFile(String Filename,String str) throws IOException{
+        ///////////////////////Write to output files///////////////////////////
+        FileWriter fwOb=new FileWriter(new File(Filename));    
+        PrintWriter pwOb = new PrintWriter(fwOb, false);
+        
+        pwOb.write(str);
+
+        pwOb.flush();
+        pwOb.close();
+        fwOb.close(); 
+
+    }
 
 
     public static void main (String[] args){
-        ArrayList<Integer> list= new ArrayList<Integer>();
-        ArrayList<Integer> list1= new ArrayList<Integer>();
-        ArrayList<listObj> repeated= new ArrayList<listObj>();
-        ArrayList<listObj> unique= new ArrayList<listObj>();
-        String text="";
+       HashMap<listObj,Integer> entries = new HashMap <listObj,Integer>(); 
+        String text=""; 
         String text1="";
         String listname="";
         String listname1="";
-
+       
 
        try{
     Scanner reader = new Scanner(new File ("input List1.txt"));
@@ -93,84 +118,37 @@ public class AutoCompare
     while(reader1.hasNextLine()){
         text1=text1+reader1.nextLine();//list1
     }
+
+     ArrayList<listObj>list=getListOfObjects(getstrNumbers(text),listname);
+     ArrayList<listObj>list1=getListOfObjects(getstrNumbers(text1),listname1);
+    getEntries(entries,list);//get entries from list
+    getEntries(entries,list1);//get entries from list1
+
+    String strRepeated= "Repeated in "+listname+" and "+listname1+":"+'\n';;
+    String strUnique="Unique in "+listname+":"+'\n';
+    String strUnique1="Unique in "+listname1+":"+'\n';
+
+    for(Map.Entry<listObj, Integer> m : entries.entrySet()){
+        if(m.getValue()>0){
+            strRepeated=strRepeated+m.getKey().getIntegerValue()+",";
+        }
+        else if ((m.getValue()==0)&& (m.getKey().toString().equals(listname))) {
+            strUnique=strUnique+m.getKey().getIntegerValue()+",";
+        }
+        else if((m.getValue()==0)&& (m.getKey().toString().equals(listname1))){
+            strUnique1=strUnique1+m.getKey().getIntegerValue()+",";
+        }   
+    }
+    strUnique=strUnique+'\n'+strUnique1;
+
+    
+    writeToFile("Repeated.txt",strRepeated);
+
+    writeToFile("Unique.txt",strUnique);
+
+
       
-    list=getIntList(text,listname);
-    Collections.sort(list);
-    list1=getIntList(text1,listname1);
-    Collections.sort(list1);
-
-    Comparator<listObj> c = new Comparator<listObj>() {
-      public int compare(listObj a, listObj b) {
-        return ((a.getValue()==b.getValue())?1:0);
-      }
-   };
-    //Collections. binarySearch();
-        //(Collections.binarySearch(repeated, new listObj(listname, ent), c)<0)
-
-    for(Integer ent : list) {
-     if(list1.contains(ent) && !repeated.contains(new listObj(listname, ent))){
-        repeated.add(new listObj(listname, ent));
-     }
-     else if(!list1.contains(ent) && !unique.contains(new listObj(listname, ent)) ){
-        unique.add(new listObj(listname, ent));
-     }
-
-    }
-
-        for(Integer ent : list1) {
-     if(list.contains(ent) && !repeated.contains(new listObj(listname1, ent))){
-        repeated.add(new listObj(listname1, ent));
-     }
-     else if(!list.contains(ent) && !unique.contains(new listObj(listname1, ent)) ){
-        unique.add(new listObj(listname1, ent));
-     }
-
-    }
-
-
-
-
-    File rep = new File("Repeated.txt");
-    FileWriter fwOb=new FileWriter(rep);    
-    PrintWriter pwOb = new PrintWriter(fwOb, false);
-    String str = "Repeated in "+listname+" and "+listname1+":"+'\n';
-
-    for(listObj s: repeated){
-        str=str+s.getValue()+",";
-    }
-    pwOb.write(str);
-
-
-    pwOb.flush();
-    pwOb.close();
-    fwOb.close();  
-
-    str="Unique in "+listname+":"+'\n';
-    String str1="Unique in "+listname1+":"+'\n';
-    
-    File uniq = new File("Unique.txt");
-
-
-    FileWriter fwOb1=new FileWriter(uniq);    
-    
-    PrintWriter pwOb1 = new PrintWriter(fwOb1, false);
-    for(listObj s: unique){
-        if((s.toString()).equals(listname)){
-             str=str+s.getValue()+",";
-        }
-        else{
-             str1=str1+s.getValue()+",";
-        }
-       
-    }
-    str=str+str1;
-    
-    pwOb1.write(str);
-
-    pwOb1.flush();
-    pwOb1.close();
-    fwOb1.close(); 
-
+   
     System.out.println("Auto compare is complete!!");
 
     

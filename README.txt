@@ -1,7 +1,7 @@
 what is this program?:
 This is a small java tool that takest two integer number lists and compares them. It places the unique values in the
 file called "Unique.txt" and chategorizes the unique integers according to which list  they belong to(based on list name thet is inputed list name in input file).
-This code was written to automate a redundant work task. Complexity is O(n^2), because it uses built Contains for ArrayList.
+This code was written to automate a redundant work task. Complexity is O(n), because it uses Hash map.
 Each branch will hold a different Complexity.
 
 
