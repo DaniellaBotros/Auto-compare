@@ -1,3 +1,6 @@
+to run open CMD in path and copy paste the below line:
+java -jar CALC.jar
+
 what is this program?:
 This is a small java tool that takest two integer number lists and compares them. It places the unique values in the
 file called "Unique.txt" and chategorizes the unique integers according to which list  they belong to(based on list name thet is inputed list name in input file).
